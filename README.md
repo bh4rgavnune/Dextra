@@ -47,10 +47,13 @@ Install the application and test dependencies:
 
 ```shell
 python -m pip install --upgrade pip
-python -m pip install fastapi "uvicorn[standard]" sqlalchemy jinja2 httpx pytest
+python -m pip install -r requirements.txt
+python -m pip install "uvicorn[standard]" httpx pytest
 ```
 
-There is no dependency lock or requirements file in this prototype. The database file `dextra.db` is created in the current working directory when the app starts. Exercise-library starter records are inserted automatically; session history is not cleared on restart.
+The database file `dextra.db` is created in the current working directory when the app starts. Exercise-library starter records are inserted automatically; session history is not cleared on restart.
+
+Vercel detects the FastAPI app from `app/main.py` and installs its runtime dependencies from `requirements.txt`. There, the demo SQLite database uses `/tmp` because the deployment bundle is read-only. That storage is temporary and may differ between function instances, so use a managed database for durable session history.
 
 ## Run the App
 

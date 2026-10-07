@@ -1,7 +1,11 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./dextra.db"
+SQLALCHEMY_DATABASE_URL = (
+    "sqlite:////tmp/dextra.db" if os.getenv("VERCEL") else "sqlite:///./dextra.db"
+)
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
