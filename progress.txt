@@ -1,0 +1,167 @@
+DEXTRA PROJECT PROGRESS
+=======================
+Last updated: 2026-10-07
+
+Purpose
+-------
+This file is the running change log for the Dextra demo. Whenever future work
+changes project files, dependencies, runtime setup, or verified behavior, update
+this file in the same work session. Record the date, what changed, and relevant
+validation results. Keep older entries; append a new dated entry rather than
+replacing the history.
+
+Project status
+--------------
+The demo-first rehab dashboard is implemented and was reported running under
+Uvicorn. Device session ingestion, SQLite persistence, dashboard metrics, history,
+achievements, and the exercise library are present. The implementation follows
+the supplied Spec.md and intentionally prioritizes a working demo over completeness.
+
+Changes completed to date
+-------------------------
+1. Reviewed Spec.md and established a demo-first implementation scope.
+2. Created the FastAPI application and supporting packages:
+   - app/main.py: app bootstrap, router registration, static files, database
+     initialization, and exercise-library seeding.
+   - app/database.py: SQLAlchemy engine, SQLite configuration, and session setup.
+   - app/models.py: session and exercise persistence models.
+   - app/schemas.py: request/response schemas, updated for Pydantic v2.
+   - app/seed_exercises.py: starter exercise-library data.
+   - app/services/metrics.py: dashboard metrics, including success rate, streak,
+     and rolling seven-day trend; guarded division by zero.
+   - app/services/achievements.py: demo achievement thresholds and badges.
+   - app/routers/api.py: POST /api/ingest endpoint; demo patient is fixed to
+     usr_9876 and the provided session timestamp is retained.
+   - app/routers/dashboard.py: dashboard, history, achievements, and exercise
+     library routes.
+3. Added Jinja2 templates for the shared layout and the dashboard, session
+   history, achievements, and exercise library. Added lightweight CSS and a
+   Chart.js weekly trend visualization.
+4. Added tests in tests/test_app.py for dashboard rendering, ingest behavior,
+   and zero-division handling.
+5. Added simulate_device.py at the project root. It supports --once to POST one
+   realistic device session and --seed N to generate backdated demo sessions
+   over N days using httpx.
+6. Added DESIGN.md as the app design brief.
+7. Fixed a dashboard template issue by passing the weekly total explicitly
+   instead of summing a dictionary method in Jinja.
+8. Fixed a Pydantic v2 configuration warning by using ConfigDict with
+   from_attributes=True.
+
+Runtime/environment work
+------------------------
+- Diagnosed the original Uvicorn startup failure as an import-time SQLAlchemy
+  compiled-extension DLL block from Windows App Control, rather than an invalid
+  Uvicorn module path.
+- Created a clean environment at C:\DextraVenv and installed compatible
+  dependencies. This environment was used to run the app and validation commands.
+- Uvicorn was reported running at http://127.0.0.1:8000; GET /health returned
+  {"status":"ok"}.
+
+Data seed and verification
+-------------------------
+- Ran simulate_device.py --seed 14. The script reported: "Seeded 22 sessions
+  across 14 days."
+- Direct SQLite verification and the app's get_dashboard_stats calculation
+  agreed on the following values for patient usr_9876:
+    total_sessions: 25
+    total_reps: 255
+    avg_duration: 128.6 seconds
+    day_streak: 15
+    weekly trend: Thu 11, Fri 14, Sat 28, Sun 13, Mon 29, Tue 18, Wed 30
+    weekly total: 143
+    avg_success_rate: 0.65
+- The recorded test run was: pytest tests/test_app.py -q -> 3 passed.
+
+Files in the implemented app
+----------------------------
+app/__init__.py
+app/main.py
+app/database.py
+app/models.py
+app/schemas.py
+app/seed_exercises.py
+app/services/__init__.py
+app/services/metrics.py
+app/services/achievements.py
+app/routers/__init__.py
+app/routers/api.py
+app/routers/dashboard.py
+app/templates/base.html
+app/templates/dashboard.html
+app/templates/partials/_stats.html
+app/templates/partials/_recent.html
+app/templates/history.html
+app/templates/achievements.html
+app/templates/exercise_library.html
+app/static/style.css
+tests/test_app.py
+simulate_device.py
+DESIGN.md
+
+Notes and limitations
+---------------------
+- dextra.db contains local demo data and is a runtime artifact, not source code.
+- The workspace directory is not a Git repository, so a Git diff or commit history
+  was unavailable during creation of this log. The history above is based on the
+  recorded work in this Copilot session and the files currently present.
+- The local virtual environments are environment artifacts; the working external
+  environment noted during setup is C:\DextraVenv.
+- Previously reported test, health, and metric results are historical validation
+  results. Re-run checks after future changes and add their fresh results here.
+
+Change log
+----------
+2026-10-07: Added live dashboard updates.
+- Extracted the stat cards and recent sessions into
+  app/templates/partials/_stats.html and app/templates/partials/_recent.html.
+- Added GET /partials/stats and GET /partials/recent endpoints. Both partial
+  roots use HTMX with hx-trigger="every 5s" and replace themselves in place.
+- Added HTMX to the shared page layout and a dashboard toast that displays
+  "New session received" when the latest persisted session ID changes.
+- Ordered recent sessions by descending insertion ID so an incoming session is
+  shown even when its device-provided timestamp is backdated.
+- Added a regression test that ingests a session and checks that both partial
+  responses reflect the increased count and latest session ID.
+- Validation: pytest tests/test_app.py -q -> 4 passed (one existing Starlette
+  deprecation warning).
+- Browser validation: with the dashboard open at http://127.0.0.1:8000/, ran
+  simulate_device.py --once. Without a page navigation, total sessions changed
+  from 30 to 31, total reps from 297 to 301, the new session appeared, the
+  latest-session ID changed from 30 to 31, and the toast became visible.
+
+2026-10-07: Updated repository agent instructions.
+- Updated AGENTS.md to require reading every `.agents/skills/*/SKILL.md` before
+  task execution, applying the relevant skill workflows, and rescanning when
+  skills or task scope change.
+- Corrected document references to the existing DESIGN.md and Spec.md names.
+- Reviewed the four local skills present at the time: frontend-design,
+  improve-codebase-architecture, ponytail, and web-design-guidelines.
+- Validation confirmed all four skill files exist and AGENTS.md includes the
+  pre-execution inventory, skill-application, and rescan requirements.
+
+2026-10-07: Remade the web layout and CSS from DESIGN.md.
+- Replaced the Tailwind-based shared navigation with the specified black 44px
+  global navigation and a consistent footer; removed the Tailwind CDN include.
+- Rebuilt dashboard, history, achievements, exercise library, and live-refresh
+  partial markup with semantic classes and responsive layouts.
+- Replaced the minimal Arial stylesheet with the DESIGN.md palette, system
+  typography, spacing, action-blue controls, parchment canvas, and dark trend
+  section. UI cards no longer use shadows.
+- Kept the chart, HTMX polling, latest-session toast, history filter, and all
+  displayed data. Updated exercise names for readability and versioned the CSS
+  URL to ensure browsers load the new stylesheet rather than a cached copy.
+- Updated the live-partial test to check the human-readable exercise label.
+- Validation: pytest tests/test_app.py -q -> 4 passed (one existing Starlette
+  deprecation warning).
+- Browser validation: all four routes rendered at 390px without horizontal
+  overflow; the dashboard was also inspected at 1440px. Confirmed black nav,
+  active versioned stylesheet, Chart.js canvas, HTMX availability, and initial
+  hidden toast on mobile.
+
+2026-10-07: Added project and demo documentation.
+- Added README.md with the app flow, setup and run commands, simulator usage,
+  ESP32 network setup, and the implemented ingestion payload and defaults.
+- Added DEMO.md with a timed three-minute walkthrough and simulator fallback.
+- Documented the ESP32 sensor hooks and force value as placeholders, and the
+  demo app's single-patient, unauthenticated local-network limitation.

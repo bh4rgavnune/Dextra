@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dextra Rehab Dashboard</title>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=20261007-nav-type" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+    <nav class="global-nav" aria-label="Main navigation">
+      <div class="nav-inner">
+        <a href="/" class="brand-mark" aria-label="Dextra home">Dextra</a>
+        <div class="nav-links">
+          <a href="/" {% if request.url.path == '/' %}aria-current="page"{% endif %}>Dashboard</a>
+          <a href="/history" {% if request.url.path == '/history' %}aria-current="page"{% endif %}>History</a>
+          <a href="/achievements" {% if request.url.path == '/achievements' %}aria-current="page"{% endif %}>Achievements</a>
+          <a href="/exercises" {% if request.url.path.startswith('/exercises') or request.url.path == '/exercise-library' %}aria-current="page"{% endif %}>Exercises</a>
+        </div>
+      </div>
+    </nav>
+    <main id="main-content" class="site-main" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="site-footer">
+      <div class="footer-inner"><span>Dextra</span><span>Movement, made measurable.</span></div>
+    </footer>
+  </body>
+</html>

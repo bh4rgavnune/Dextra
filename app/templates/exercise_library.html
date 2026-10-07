@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section library-page">
+  <header class="page-heading">
+    <p class="eyebrow">Movement guide</p>
+    <h1>Exercise library</h1>
+    <p class="page-description">Explore the movements in your routine and open a guide for each one.</p>
+  </header>
+  <div class="exercise-grid">
+    {% for exercise in exercises %}
+    <article class="exercise-card">
+      <h2>{{ exercise.title }}</h2>
+      <p>{{ exercise.what_it_is }}</p>
+      <a class="text-link" href="/exercises/{{ exercise.slug }}">Open exercise guide</a>
+    </article>
+    {% else %}
+    <p class="empty-state">No exercises found.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

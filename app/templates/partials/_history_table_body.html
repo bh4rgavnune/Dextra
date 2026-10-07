@@ -1,0 +1,41 @@
+<tbody id="history-body">
+  {% for session in sessions %}
+  {% set success_rate = session.successful_reps / session.switch_activations * 100 if session.switch_activations else 0 %}
+  <tr class="history-session">
+    <td>{{ session.timestamp.strftime('%b %d, %Y %H:%M') }}</td>
+    <td>
+      {% if session.session_type in exercise_slugs %}
+      <a href="/exercises/{{ session.session_type }}">{{ session.session_type | replace('_', ' ') | title }}</a>
+      {% else %}
+      {{ session.session_type | replace('_', ' ') | title }}
+      {% endif %}
+    </td>
+    <td>{{ session.duration_seconds }} sec</td>
+    <td>{{ session.switch_activations }}</td>
+    <td>{{ session.successful_reps }}</td>
+    <td><span class="success-badge {% if success_rate >= 80 %}success-high{% elif success_rate >= 50 %}success-medium{% else %}success-low{% endif %}">{{ '%.0f' | format(success_rate) }}%</span></td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6" class="empty-state">{% if selected_type %}No sessions match this filter.{% else %}No sessions yet. Device activity will appear here.{% endif %}</td></tr>
+  {% endfor %}
+  <tr class="history-pagination-row">
+    <td colspan="6">
+      <nav class="history-pagination" aria-label="Session history pages">
+        <span>
+          {% if total_sessions %}Showing {{ (page - 1) * 20 + 1 }} to {{ [page * 20, total_sessions] | min }} of {{ total_sessions }}{% else %}No sessions{% endif %}
+        </span>
+        {% if total_pages > 1 %}
+        <div class="pagination-controls">
+          {% if page > 1 %}
+          <a href="/history?session_type={{ selected_type | urlencode }}&amp;page={{ page - 1 }}" hx-get="/history?session_type={{ selected_type | urlencode }}&amp;page={{ page - 1 }}" hx-target="#history-body" hx-swap="outerHTML" hx-indicator="#history-loading" aria-label="Previous page">Previous</a>
+          {% endif %}
+          <span>Page {{ page }} of {{ total_pages }}</span>
+          {% if page < total_pages %}
+          <a href="/history?session_type={{ selected_type | urlencode }}&amp;page={{ page + 1 }}" hx-get="/history?session_type={{ selected_type | urlencode }}&amp;page={{ page + 1 }}" hx-target="#history-body" hx-swap="outerHTML" hx-indicator="#history-loading" aria-label="Next page">Next</a>
+          {% endif %}
+        </div>
+        {% endif %}
+      </nav>
+    </td>
+  </tr>
+</tbody>

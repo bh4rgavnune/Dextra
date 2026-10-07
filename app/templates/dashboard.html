@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="dashboard-page">
+  <div id="new-session-toast" role="status" aria-live="polite" class="session-toast hidden">
+    New session received
+  </div>
+
+  <header class="patient-hero">
+    <div>
+      <p class="eyebrow">Rehabilitation overview</p>
+      <h1>Progress, at a glance.</h1>
+      <p class="patient-id">Patient <strong>usr_9876</strong></p>
+    </div>
+    <p class="live-indicator"><span aria-hidden="true"></span> Live session data</p>
+    <p id="dashboard-loading" class="loading-status" aria-hidden="true">Refreshing dashboard…</p>
+  </header>
+
+  {% include "partials/_stats.html" %}
+
+  <section class="trend-band" aria-labelledby="trend-heading">
+    <div class="trend-chart-wrap">
+      <div class="section-heading section-heading-dark">
+        <p class="eyebrow">Weekly activity</p>
+        <h2 id="trend-heading">A steady rhythm.</h2>
+      </div>
+      {% if stats.total_sessions %}
+      <div class="chart-frame"><canvas id="weeklyTrendChart" aria-label="Successful repetitions over the last seven days" role="img"></canvas></div>
+      {% else %}
+      <p class="chart-empty-state">Weekly activity will appear here after your first session.</p>
+      {% endif %}
+    </div>
+    <div class="trend-summary">
+      <p class="eyebrow">This week</p>
+      <p class="weekly-total">{{ trend_total }}</p>
+      <p class="summary-label">successful repetitions</p>
+      <div class="summary-divider"></div>
+      <p class="success-rate">{% if stats.total_sessions %}{{ '%.0f' | format(stats.avg_success_rate * 100) }}<span>%</span>{% else %}—{% endif %}</p>
+      <p class="summary-label">{% if stats.total_sessions %}average success rate{% else %}success rate after your first session{% endif %}</p>
+    </div>
+  </section>
+
+  {% include "partials/_recent.html" %}
+</div>
+
+{% if stats.total_sessions %}
+<script>
+  const trendLabels = {{ trend_labels | tojson }};
+  const trendValues = {{ trend_values | tojson }};
+  new Chart(document.getElementById('weeklyTrendChart'), {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [{
+        label: 'Successful reps',
+        data: trendValues,
+        borderColor: '#2997ff',
+        backgroundColor: 'rgba(41,151,255,0.12)',
+        pointBackgroundColor: '#ffffff',
+        pointBorderColor: '#2997ff',
+        pointRadius: 4,
+        pointHoverRadius: 5,
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#cccccc' } },
+        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.12)' }, ticks: { color: '#cccccc', precision: 0 } }
+      }
+    }
+  });
+</script>
+{% endif %}
+<script>
+  let latestSessionId = document.getElementById('recent-sessions')?.dataset.latestSessionId ?? '';
+  let toastTimeout;
+
+  document.body.addEventListener('htmx:afterSwap', () => {
+    const currentSessionId = document.getElementById('recent-sessions')?.dataset.latestSessionId ?? '';
+    if (currentSessionId && latestSessionId && currentSessionId !== latestSessionId) {
+      const toast = document.getElementById('new-session-toast');
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => toast.classList.add('hidden'), 3500);
+    }
+    if (currentSessionId) latestSessionId = currentSessionId;
+  });
+</script>
+{% endblock %}

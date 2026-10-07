@@ -1,0 +1,22 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Dextra app",
+			"type": "shell",
+			"command": "c:/Users/Bhargav/Desktop/Dextra/.venv/Scripts/python.exe",
+			"args": [
+				"-m",
+				"uvicorn",
+				"app.main:app",
+				"--host",
+				"127.0.0.1",
+				"--port",
+				"8000"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section history-page">
+  <header class="page-heading">
+    <p class="eyebrow">All activity</p>
+    <h1>Session history</h1>
+    <p class="page-description">Review recorded exercises, durations, and repetition outcomes.</p>
+  </header>
+
+  <p id="history-loading" class="loading-status" role="status" aria-live="polite" aria-atomic="true">Updating history…</p>
+  <form method="get" action="/history" class="filter-form" hx-get="/history" hx-trigger="change" hx-target="#history-body" hx-swap="outerHTML" hx-indicator="#history-loading">
+    <label for="session-type">Exercise</label>
+    <select id="session-type" name="session_type">
+      <option value="">All</option>
+      {% for exercise_type in exercise_types %}
+      <option value="{{ exercise_type }}" {% if selected_type == exercise_type %}selected{% endif %}>{{ exercise_type }}</option>
+      {% endfor %}
+    </select>
+    <button class="button-primary" type="submit">Apply filter</button>
+  </form>
+
+  <div class="table-scroll" role="region" aria-label="Session records; scroll horizontally to view all columns" tabindex="0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Date</th>
+          <th scope="col">Exercise</th>
+          <th scope="col">Duration</th>
+          <th scope="col">Activations</th>
+          <th scope="col">Reps</th>
+          <th scope="col">Success rate</th>
+        </tr>
+      </thead>
+      {% include "partials/_history_table_body.html" %}
+    </table>
+  </div>
+</section>
+{% endblock %}

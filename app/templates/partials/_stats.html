@@ -1,0 +1,26 @@
+<section
+  id="stats-cards"
+  class="stats-strip"
+  data-total-sessions="{{ stats.total_sessions }}"
+  hx-indicator="#dashboard-loading"
+  hx-get="/partials/stats"
+  hx-trigger="every 5s"
+  hx-swap="outerHTML"
+>
+  <div class="stat-item">
+    <p class="stat-label">Total sessions</p>
+    <p class="stat-value">{{ stats.total_sessions }}</p>
+  </div>
+  <div class="stat-item">
+    <p class="stat-label">Successful reps</p>
+    <p class="stat-value">{{ stats.total_reps }}</p>
+  </div>
+  <div class="stat-item">
+    <p class="stat-label">Average duration</p>
+    <p class="stat-value">{{ stats.avg_duration }}<span class="stat-unit"> sec</span></p>
+  </div>
+  <div class="stat-item">
+    <p class="stat-label">Active-day streak</p>
+    <p class="stat-value">{{ stats.day_streak }}<span class="stat-unit"> days</span></p>
+  </div>
+</section>

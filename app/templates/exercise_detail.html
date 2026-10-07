@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-section exercise-detail-page">
+  <p class="eyebrow"><a href="/exercises">Exercise library</a></p>
+  <header class="page-heading">
+    <h1>{{ exercise.title }}</h1>
+  </header>
+  <div class="exercise-detail-layout">
+    <div class="exercise-guide">
+      <section class="guide-section">
+        <h2>What it is</h2>
+        <p>{{ exercise.what_it_is }}</p>
+      </section>
+      <section class="guide-section">
+        <h2>How to do it</h2>
+        <ol>
+          {% for step in steps %}
+          <li>{{ step }}</li>
+          {% endfor %}
+        </ol>
+      </section>
+      <section class="guide-section">
+        <h2>Why it helps</h2>
+        <p>{{ exercise.why_it_helps }}</p>
+      </section>
+    </div>
+    <aside class="exercise-stats" aria-labelledby="exercise-stats-heading">
+      <h2 id="exercise-stats-heading">Your stats for this exercise</h2>
+      <div class="exercise-stat">
+        <strong>{{ session_count }}</strong>
+        <span>sessions</span>
+      </div>
+      <div class="exercise-stat">
+        <strong>{% if session_count %}{{ '%.0f' | format(success_rate * 100) }}%{% else %}—{% endif %}</strong>
+        <span>{% if session_count %}success rate{% else %}available after your first session{% endif %}</span>
+      </div>
+    </aside>
+  </div>
+  <p class="exercise-safety-note">Stop if you feel pain and consult your therapist.</p>
+</section>
+{% endblock %}

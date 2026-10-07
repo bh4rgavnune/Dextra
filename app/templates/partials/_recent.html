@@ -1,0 +1,37 @@
+<section
+  id="recent-sessions"
+  class="recent-section"
+  data-latest-session-id="{{ latest_session_id }}"
+  hx-indicator="#dashboard-loading"
+  hx-get="/partials/recent"
+  hx-trigger="every 5s"
+  hx-swap="outerHTML"
+>
+  <div class="section-heading recent-heading">
+    <div><p class="eyebrow">Session log</p><h2>Recent sessions</h2></div>
+    <a class="text-link" href="/history">View history</a>
+  </div>
+  <div class="session-list">
+    {% for session in recent_sessions %}
+    <div class="session-row">
+      <div class="session-main">
+        <p class="session-name">
+          {% if session.session_type in exercise_slugs %}
+          <a href="/exercises/{{ session.session_type }}">{{ session.session_type | replace('_', ' ') | title }}</a>
+          {% else %}
+          {{ session.session_type | replace('_', ' ') | title }}
+          {% endif %}
+        </p>
+        <p class="session-date">{{ session.timestamp.strftime('%b %d, %Y at %H:%M') }}</p>
+      </div>
+      <div class="session-result">
+        <strong>{{ session.successful_reps }}</strong><span> reps</span>
+        <span class="result-divider"></span>
+        <span>{{ session.duration_seconds }} sec</span>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-state">No sessions yet. Device activity will appear here.</p>
+    {% endfor %}
+  </div>
+</section>
