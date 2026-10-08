@@ -1,2 +1,13 @@
+[project]
+name = "dextra"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+	"fastapi",
+	"jinja2",
+	"sqlalchemy",
+	"httpx",
+]
+
 [tool.vercel]
 entrypoint = "app.main:app"
