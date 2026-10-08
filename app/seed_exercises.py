@@ -37,7 +37,8 @@ def seed_exercises():
             if not existing:
                 db.add(Exercise(**item))
             else:
-                existing.how_to_do_it = item["how_to_do_it"]
+                for field, value in item.items():
+                    setattr(existing, field, value)
         db.commit()
     finally:
         db.close()

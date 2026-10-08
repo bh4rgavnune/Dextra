@@ -2,11 +2,14 @@ import re
 from datetime import datetime, timedelta, timezone
 from uuid import uuid4
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
-from app.database import SessionLocal
+from app.database import Base, SessionLocal
 from app.main import app
 from app.models import Exercise, SessionRecord
+from app import seed_exercises as exercise_seeder
 from app.services.achievements import get_achievements
 from app.services import metrics
 
@@ -70,6 +73,34 @@ def test_dashboard_route_returns_200():
     client = TestClient(app)
     response = client.get("/")
     assert response.status_code == 200
+
+
+def test_exercise_seeder_refreshes_existing_records(monkeypatch):
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(bind=engine)
+    test_session_local = sessionmaker(bind=engine)
+    monkeypatch.setattr(exercise_seeder, "SessionLocal", test_session_local)
+    exercise_data = exercise_seeder.EXERCISE_LIBRARY[0]
+
+    db = test_session_local()
+    exercise = Exercise(**exercise_data)
+    db.add(exercise)
+    db.commit()
+    for field in ("title", "what_it_is", "how_to_do_it", "why_it_helps"):
+        setattr(exercise, field, "stale content")
+    db.commit()
+    db.close()
+
+    exercise_seeder.seed_exercises()
+
+    db = test_session_local()
+    refreshed = db.query(Exercise).filter_by(slug=exercise_data["slug"]).one()
+    assert refreshed.title == exercise_data["title"]
+    assert refreshed.what_it_is == exercise_data["what_it_is"]
+    assert refreshed.how_to_do_it == exercise_data["how_to_do_it"]
+    assert refreshed.why_it_helps == exercise_data["why_it_helps"]
+    db.close()
+    engine.dispose()
 
 
 def test_exercise_pages_show_patient_stats_and_link_sessions():
