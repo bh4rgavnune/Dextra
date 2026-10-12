@@ -8,7 +8,8 @@ This is a single-patient prototype, not a clinical product. It has no login or t
 
 ```mermaid
 flowchart LR
-    Device[ESP32 orthosis] -->|JSON HTTP POST /api/ingest| API[FastAPI]
+    Device[ESP32 orthosis] -->|JSON over USB serial| Bridge[serial_bridge.py]
+    Bridge -->|HTTP POST /api/ingest| API[FastAPI]
     Simulator[simulate_device.py] -->|JSON HTTP POST /api/ingest| API
     API -->|validate and persist via SQLAlchemy| DB[(SQLite: dextra.db)]
     DB -->|session records| API
@@ -94,18 +95,12 @@ python simulate_device.py --seed 14
 
 `--seed N` posts one or two generated sessions per day across the requested period. It appends records; it does not clear existing history, so seed a demo database only once unless duplicates are intentional. The simulator posts to `http://localhost:8000/api/ingest`.
 
-## Connect an ESP32
+## Connect an ESP32 over USB
 
-1. Install ArduinoJson in the Arduino environment.
-2. In `esp32_session.ino`, set `WIFI_SSID`, `WIFI_PASSWORD`, and `SERVER_IP`. `SERVER_IP` must be the computer's LAN IPv4 address, not `127.0.0.1`.
-3. Start Uvicorn so other devices on the local network can reach it:
-
-   ```shell
-   python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
-   ```
-
-4. Put the computer and ESP32 on the same network, allow inbound TCP port 8000 through the computer's firewall if prompted, then flash the sketch.
-5. Open the serial monitor at 115200 baud. The sketch starts a session on boot; hold its session-end button on GPIO 27 for two seconds to POST the session.
+1. Install ArduinoJson in the Arduino environment, then flash `esp32_session.ino`.
+2. Start the app from the project root: `python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`.
+3. Find the ESP32's serial port in Arduino IDE or Device Manager. Close the Arduino Serial Monitor, then run `python serial_bridge.py --port COM5`, replacing `COM5` with the port shown on your computer.
+4. The sketch starts a session on boot. Hold the session-end button on GPIO 27 for two seconds; the bridge should print the backend response, and the dashboard refreshes within five seconds.
 
 The firmware currently leaves `noteSwitchActivation()` and `noteSuccessfulRep()` as integration hooks and sets `MAX_FORCE_N` to `0.0`. Connect those values to the orthosis switch, servo, and force-sensor logic before treating hardware measurements as meaningful. HTTP traffic is unauthenticated and unencrypted; use only a trusted demo network and non-sensitive data.
 
